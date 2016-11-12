@@ -25,19 +25,25 @@
 
 <script>
     var w = 1250;
-    var h = 620; 
+    var h = 600; 
     var padding = 80; 
-    var letterList = ["國民黨","民進黨","親民黨","台聯","無黨團結聯盟"];
-    
+    var letterList = ["國民黨","民進黨","親民黨","台聯","無黨團結聯盟","無黨籍"];
+    var color=["#2200AA","#227700","#FF8800","#FFFF00","#C10066","#888888"]
     svg(); 
     
-    d3.csv("D3-legislation.csv", function(dataSet){
-           
+    d3.csv("D3-legislation.csv",row, function(dataSet){
            bind(dataSet);
            render(dataSet);
-            
+           btnList(dataSet); 
         });
-        
+    
+    function row(d){
+            
+        d.pronum = +d.pronum;
+        d.news = +d.news;
+            
+            return d;
+        }
         
     function svg(){
            d3.select("body").append("svg").attr({
@@ -82,9 +88,10 @@
                     })])
                     .range([2,6]);
             
-           var fScale = d3.scale.category10();
+           var fScale = d3.scale.ordinal()
+                          .domain(letterList)
+                          .range(color);
 
-    
             var xAxis= d3.svg.axis()
                       .scale(xScale)
                       .orient("bottom");
@@ -115,7 +122,7 @@
        d3.select("svg")
              .append("g")
              .attr("class","axis")
-             .attr("transform","translate(0,"+(h-padding+10)+")")
+             .attr("transform","translate(0,"+(h-padding+15)+")")
              .call(xAxis)
              .append("text")
              .attr("x", 1190)
@@ -124,7 +131,7 @@
        d3.select("svg")
              .append("g")
              .attr("class","axis")
-             .attr("transform","translate("+(padding-15)+",0)")
+             .attr("transform","translate("+(padding-25)+",0)")
              .call(yAxis)
              .append("text")
              .attr("x", -50)
@@ -136,26 +143,56 @@
           function btnList(dataSet){
            var partyArr = dataSet.map(function(d){
                return d.firstpar;
-           })
+           });
            
            var uniqueparty = unique(partyArr);
-           var selection = d3.select("body").selectAll("div").data(uniqueparty);
-           selection.enter().append("div");
-           selection.exit().remove();
               
-           d3.selectAll("div").text(function(d){
-               return d
-           })}
+           var filterparty = uniqueparty.filter(function(d){ 
+               return d!="";
+           });
+              
+           var selection = d3.select("body")
+           .append("div")
+           .selectAll("input")
+           .data(filterparty)
+           .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+               });  
+           selection.enter()
+               .append("input")
+               .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+           })
+               .on("click",function(d){
+               update(d);
+           });
+                      
+          function update(partyName){
+              var newDataSet = dataSet.filter(function(d){
+                      return d.firstpar === partyName;
+                  });
+          bind(newDataSet)
+          render(newDataSet)
+          
+          }
+          }
 
-           function unique(partyArr){
-           var n = [];
-               
-           for (var i=0; i<partyArr.length;i++){
-                if(n.indexOf(partyArr[i])===-1){
-                   n.push(partyArr[i]);
-                   return n;}}}
-        
-    
+          function unique(array){
+          var n = []; 
+          for(var i = 0; i < array.length; i++){
+            if (n.indexOf(array[i]) == -1){
+                n.push(array[i]);
+            }
+          }
+          return n;
+        }
+                           
     </script>
     
 </body>
