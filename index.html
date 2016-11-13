@@ -23,28 +23,23 @@
 </head>
 <body>
 
+<h2><strong>法律提案及連署人數與新聞熱度的關聯性-以第八屆立法院為例</strong></h2>
+
 <script>
     var w = 1250;
     var h = 600; 
     var padding = 80; 
     var letterList = ["國民黨","民進黨","親民黨","台聯","無黨團結聯盟","無黨籍"];
-    var color=["#2200AA","#227700","#FF8800","#FFFF00","#C10066","#888888"]
+    var letterList2 =["區域立委","不分區立委","原住民立委"]
+    var color=["#2200AA","#227700","#FF8800","#FFFF00","#C10066","#888888"];
     svg(); 
     
-    d3.csv("D3-legislation.csv",row, function(dataSet){
+    d3.csv("D3-legislation.csv", function(dataSet){
            bind(dataSet);
            render(dataSet);
            btnList(dataSet); 
         });
     
-    function row(d){
-            
-        d.pronum = +d.pronum;
-        d.news = +d.news;
-            
-            return d;
-        }
-        
     function svg(){
            d3.select("body").append("svg").attr({
            width:w,
@@ -56,7 +51,11 @@
              height: "100%",
              fill: "white"
         });
-        }
+        
+    d3.select("svg").append("g").attr("id", "axisX");
+    d3.select("svg").append("g").attr("id", "axisY");
+    }
+    
     
     function bind(dataSet){
             var selection = d3.select("svg")
@@ -92,14 +91,6 @@
                           .domain(letterList)
                           .range(color);
 
-            var xAxis= d3.svg.axis()
-                      .scale(xScale)
-                      .orient("bottom");
-                           
-            var yAxis= d3.svg.axis()
-                      .scale(yScale)
-                      .orient("left");
-
          d3.selectAll("circle")
               .attr({
                 cx:function(d){
@@ -118,9 +109,17 @@
                   return d.name+"\r\n"+d.number+"\r\n"+d.firstpro;
                 });
          
+         var xAxis= d3.svg.axis()
+                      .scale(xScale)
+                      .orient("bottom");
+                           
+         var yAxis= d3.svg.axis()
+                      .scale(yScale)
+                      .orient("left");    
+            
             
        d3.select("svg")
-             .append("g")
+             .select("g#axisX")
              .attr("class","axis")
              .attr("transform","translate(0,"+(h-padding+15)+")")
              .call(xAxis)
@@ -129,7 +128,7 @@
              .text("新聞筆數");
     
        d3.select("svg")
-             .append("g")
+             .select("g#axisY")
              .attr("class","axis")
              .attr("transform","translate("+(padding-25)+",0)")
              .call(yAxis)
