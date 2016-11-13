@@ -1,0 +1,316 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Legislative Behavior</title>
+    <script src="https://d3js.org/d3.v3.js"></script>
+    
+     <style>
+        body{
+            background: #eee;
+        }
+        .axis path, .axis line{
+            fill:none;
+            stroke:black;
+            shape-rendering:auto;
+        }
+        .axis text{
+            font-size: 12px;
+            fill:blue;
+        }
+    </style>
+    
+</head>
+<body>
+
+<h2><strong>法律提案及連署人數與新聞熱度的關聯性-以第八屆立法院為例</strong></h2>
+
+<script>
+    var w = 1250;
+    var h = 600; 
+    var padding = 80; 
+    var letterList = ["國民黨","民進黨","親民黨","台聯","無黨團結聯盟","無黨籍"];
+    var letterList2 =["區域立委","不分區立委","原住民立委"]
+    var color=["#2200AA","#227700","#FF8800","#FFFF00","#C10066","#888888"];
+    var color2=["#2200AA","#227700","#C10066"]
+    svg(); 
+    
+    d3.csv("D3-legislation.csv", function(dataSet){
+           bind(dataSet);
+           render(dataSet);
+           btnList(dataSet); 
+        });
+    
+    function svg(){
+           d3.select("body").append("svg").attr({
+           width:w,
+           height:h
+           });
+            
+    d3.select("svg").append("g").append("rect").attr({
+             width: "100%",
+             height: "100%",
+             fill: "white"
+        });
+        
+    d3.select("svg").append("g").attr("id", "axisX");
+    d3.select("svg").append("g").attr("id", "axisY");
+    }
+    
+    
+    function bind(dataSet){
+            var selection = d3.select("svg")
+                              .selectAll("circle")
+                              .data(dataSet);
+            
+            selection.enter().append("circle");
+            selection.exit().remove();
+        }
+        
+        function render(dataSet){
+            var xScale = d3.scale.linear()
+                    .domain([0,d3.max(dataSet,function(d){
+                        return +d.news;
+                    })])
+                    .range([padding,w-padding]);
+                           
+            var yScale = d3.scale.linear()
+                    .domain([10,d3.max(dataSet,function(d){
+                        return +d.signnum;
+                    })])
+                    .range([h-padding,padding]);
+            
+            var rScale = d3.scale.linear()
+                    .domain([d3.min(dataSet,function(d){
+                        return +d.pronum;
+                    }),d3.max(dataSet,function(d){
+                        return +d.pronum;
+                    })])
+                    .range([2,6]);
+            
+           var fScale = d3.scale.ordinal()
+                          .domain(letterList)
+                          .range(color);
+
+         d3.selectAll("circle")
+              .attr({
+                cx:function(d){
+                    return xScale(d.news);
+                },
+                cy:function(d){
+                    return yScale(d.signnum);
+                },
+                r:function(d){
+                    return rScale(+d.pronum);
+                },
+                fill:function(d){
+                    return fScale(letterList.indexOf(d.firstpar));
+                }})
+              .append("title").text(function(d){
+                  return d.name+"\r\n"+d.number+"\r\n"+d.firstpro+"\r\n"+d.firstdis;
+                });
+         
+         var xAxis= d3.svg.axis()
+                      .scale(xScale)
+                      .orient("bottom");
+                           
+         var yAxis= d3.svg.axis()
+                      .scale(yScale)
+                      .orient("left");    
+            
+            
+       d3.select("svg")
+             .select("g#axisX")
+             .attr("class","axis")
+             .attr("transform","translate(0,"+(h-padding+15)+")")
+             .call(xAxis)
+             .append("text")
+             .attr("x", 1190)
+             .text("新聞筆數");
+    
+       d3.select("svg")
+             .select("g#axisY")
+             .attr("class","axis")
+             .attr("transform","translate("+(padding-25)+",0)")
+             .call(yAxis)
+             .append("text")
+             .attr("x", -50)
+             .attr("y", 50)
+             .text("法律提案之連署人數");
+             
+        }
+            
+     function render2(dataSet){
+            var xScale2 = d3.scale.linear()
+                    .domain([0,d3.max(dataSet,function(d){
+                        return +d.news;
+                    })])
+                    .range([padding,w-padding]);
+                           
+            var yScale2 = d3.scale.linear()
+                    .domain([10,d3.max(dataSet,function(d){
+                        return +d.signnum;
+                    })])
+                    .range([h-padding,padding]);
+            
+            var rScale2 = d3.scale.linear()
+                    .domain([d3.min(dataSet,function(d){
+                        return +d.pronum;
+                    }),d3.max(dataSet,function(d){
+                        return +d.pronum;
+                    })])
+                    .range([2,6]);
+         
+           var fScale2 = d3.scale.ordinal()
+                          .domain(letterList2)
+                          .range(color2);
+    
+      d3.selectAll("circle")
+              .attr({
+                cx:function(d){
+                    return xScale2(d.news);
+                },
+                cy:function(d){
+                    return yScale2(d.signnum);
+                },
+                r:function(d){
+                    return rScale2(+d.pronum);
+                },
+                fill:function(d){
+                    return fScale2(letterList2.indexOf(d.firstdis));
+                }})
+              .append("title").text(function(d){
+                  return d.name+"\r\n"+d.number+"\r\n"+d.firstpro+"\r\n"+d.firstdis;
+                });
+    
+         var xAxis2= d3.svg.axis()
+                      .scale(xScale2)
+                      .orient("bottom");
+                           
+         var yAxis2= d3.svg.axis()
+                      .scale(yScale2)
+                      .orient("left");    
+            
+            
+       d3.select("svg")
+             .select("g#axisX")
+             .attr("class","axis")
+             .attr("transform","translate(0,"+(h-padding+15)+")")
+             .call(xAxis2)
+             .append("text")
+             .attr("x", 1190)
+             .text("新聞筆數");
+    
+       d3.select("svg")
+             .select("g#axisY")
+             .attr("class","axis")
+             .attr("transform","translate("+(padding-25)+",0)")
+             .call(yAxis2)
+             .append("text")
+             .attr("x", -50)
+             .attr("y", 50)
+             .text("法律提案之連署人數");
+             
+        }
+        
+          function btnList(dataSet){
+           var partyArr = dataSet.map(function(d){
+               return d.firstpar;
+           });
+           
+           var uniqueparty = unique(partyArr);
+              
+           var filterparty = uniqueparty.filter(function(d){ 
+               return d!="";
+           });
+              
+           var districtArr = dataSet.map(function(d){
+               return d.firstdis;
+           });   
+              
+           var uniquedistrict = unique(districtArr);  
+              
+           var filterdistrict = uniquedistrict.filter(function(d){ 
+               return d!="";
+           });      
+              
+           var selection = d3.select("body")
+           .append("div")
+           .selectAll("input")
+           .data(filterparty)
+           .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+               });  
+           selection.enter()
+               .append("input")
+               .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+           })
+               .on("click",function(d){
+               update(d);
+           });
+              
+            var selection2 = d3.select("body")
+           .append("div")
+           .selectAll("input")
+           .data(filterdistrict)
+           .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+               });  
+           selection.enter()
+               .append("input")
+               .attr({
+                  type: "button",
+                  value:　function(d){
+                      return d;
+                  }
+           })
+               .on("click",function(d){
+               update2(d);
+           });     
+              
+              
+                      
+          function update(partyName){
+              var newDataSet = dataSet.filter(function(d){
+                      return d.firstpar === partyName;
+                  });
+          bind(newDataSet)
+          render(newDataSet)
+          
+          }
+              
+          function update2(districtName){
+              var newDataSet2 = dataSet.filter(function(d){
+                      return d.firstdis === districtName;
+                  });
+          bind(newDataSet2)
+          render(newDataSet2)
+          
+          }    
+              
+          }
+
+          function unique(array){
+          var n = []; 
+          for(var i = 0; i < array.length; i++){
+            if (n.indexOf(array[i]) == -1){
+                n.push(array[i]);
+            }
+          }
+          return n;
+        }
+                           
+    </script>
+    
+</body>
+</html>
